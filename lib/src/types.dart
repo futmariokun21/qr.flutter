@@ -42,30 +42,54 @@ enum FinderPatternPosition {
 enum QrEyeShape {
   /// Use square eye frame.
   square,
-
   /// Use circular eye frame.
   circle,
+  /// Use rounded eye frame.
+  rounded
 }
 
 /// Enumeration representing the shape of Data modules inside QR.
 enum QrDataModuleShape {
   /// Use square dots.
   square,
-
   /// Use circular dots.
   circle,
+  /// Use rounded dots.
+  rounded
 }
 
 /// Styling options for finder pattern eye.
 @immutable
 class QrEyeStyle {
   /// Create a new set of styling options for QR Eye.
-  const QrEyeStyle({this.eyeShape, this.color});
+  const QrEyeStyle({this.eyeShapeOut, this.eyeShapeIn});
 
-  /// Eye shape.
+  /// Style border
+  final QrEyeStyleType? eyeShapeOut;
+  /// Style inner
+  final QrEyeStyleType? eyeShapeIn;
+
+  @override
+  int get hashCode => eyeShapeOut.hashCode ^ eyeShapeIn.hashCode;
+
+  @override
+  bool operator ==(Object other) {
+    if (other is QrEyeStyle) {
+      return eyeShapeOut == other.eyeShapeOut && eyeShapeIn == other.eyeShapeIn;
+    }
+    return false;
+  }
+}
+
+/// Style eye QR
+@immutable
+class QrEyeStyleType{
+  /// create new style type
+  const QrEyeStyleType({this.eyeShape, this.color});
+
+  /// square or circle
   final QrEyeShape? eyeShape;
-
-  /// Color to tint the eye.
+  /// Color
   final Color? color;
 
   @override
@@ -73,7 +97,7 @@ class QrEyeStyle {
 
   @override
   bool operator ==(Object other) {
-    if (other is QrEyeStyle) {
+    if (other is QrEyeStyleType) {
       return eyeShape == other.eyeShape && color == other.color;
     }
     return false;

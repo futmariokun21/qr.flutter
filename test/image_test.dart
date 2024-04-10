@@ -45,8 +45,8 @@ void main() {
               gapless: true,
               errorCorrectionLevel: QrErrorCorrectLevel.L,
               eyeStyle: const QrEyeStyle(
-                eyeShape: QrEyeShape.circle,
-                color: Colors.green,
+                eyeShapeOut: QrEyeStyleType(eyeShape: QrEyeShape.circle, color: Colors.green),
+                eyeShapeIn: QrEyeStyleType(eyeShape: QrEyeShape.circle, color: Colors.green),
               ),
             ),
           ),
@@ -99,8 +99,8 @@ void main() {
               gapless: true,
               errorCorrectionLevel: QrErrorCorrectLevel.L,
               eyeStyle: const QrEyeStyle(
-                eyeShape: QrEyeShape.circle,
-                color: Colors.green,
+                eyeShapeOut: QrEyeStyleType(eyeShape: QrEyeShape.circle, color: Colors.green),
+                eyeShapeIn: QrEyeStyleType(eyeShape: QrEyeShape.circle, color: Colors.green),
               ),
               dataModuleStyle: const QrDataModuleStyle(
                 dataModuleShape: QrDataModuleShape.circle,
@@ -135,8 +135,8 @@ void main() {
               foregroundColor: Colors.red,
               errorCorrectionLevel: QrErrorCorrectLevel.L,
               eyeStyle: const QrEyeStyle(
-                eyeShape: QrEyeShape.circle,
-                color: Colors.green,
+                eyeShapeOut: QrEyeStyleType(eyeShape: QrEyeShape.circle, color: Colors.green),
+                eyeShapeIn: QrEyeStyleType(eyeShape: QrEyeShape.circle, color: Colors.green),
               ),
               dataModuleStyle: const QrDataModuleStyle(
                 dataModuleShape: QrDataModuleShape.circle,

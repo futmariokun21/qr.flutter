@@ -7,6 +7,7 @@
 import 'dart:async';
 import 'dart:ui' as ui;
 
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:qr/qr.dart';
@@ -35,8 +36,8 @@ class QrPainter extends CustomPainter {
     this.embeddedImage,
     this.embeddedImageStyle,
     this.eyeStyle = const QrEyeStyle(
-      eyeShape: QrEyeShape.square,
-      color: Color(0xFF000000),
+      eyeShapeOut: QrEyeStyleType(eyeShape: QrEyeShape.square, color: Color(0xFF000000)),
+      eyeShapeIn: QrEyeStyleType(eyeShape: QrEyeShape.square, color:Color(0xFF000000)),
     ),
     this.dataModuleStyle = const QrDataModuleStyle(
       dataModuleShape: QrDataModuleShape.square,
@@ -64,8 +65,8 @@ class QrPainter extends CustomPainter {
     this.embeddedImage,
     this.embeddedImageStyle,
     this.eyeStyle = const QrEyeStyle(
-      eyeShape: QrEyeShape.square,
-      color: Color(0xFF000000),
+      eyeShapeOut: QrEyeStyleType(eyeShape: QrEyeShape.square, color: Color(0xFF000000)),
+      eyeShapeIn: QrEyeStyleType(eyeShape: QrEyeShape.square, color: Color(0xFF000000)),
     ),
     this.dataModuleStyle = const QrDataModuleStyle(
       dataModuleShape: QrDataModuleShape.square,
@@ -275,11 +276,11 @@ class QrPainter extends CustomPainter {
         );
         if (dataModuleStyle.dataModuleShape == QrDataModuleShape.square) {
           canvas.drawRect(squareRect, paint);
-        } else {
-          final roundedRect = RRect.fromRectAndRadius(
-            squareRect,
-            Radius.circular(paintMetrics.pixelSize + pixelHTweak),
-          );
+        }else if (dataModuleStyle.dataModuleShape == QrDataModuleShape.circle){
+          final roundedRect = RRect.fromRectAndRadius(squareRect, Radius.circular(paintMetrics.pixelSize + pixelHTweak));
+          canvas.drawRRect(roundedRect, paint);
+        }else{
+          final roundedRect = RRect.fromRectAndRadius(squareRect, Radius.circular(squareRect.height*0.24));
           canvas.drawRRect(roundedRect, paint);
         }
       }
@@ -326,13 +327,10 @@ class QrPainter extends CustomPainter {
     return isTopLeft || isBottomLeft || isTopRight;
   }
 
-  void _drawFinderPatternItem(
-    FinderPatternPosition position,
-    Canvas canvas,
-    _PaintMetrics metrics,
-  ) {
+  void _drawFinderPatternItem(FinderPatternPosition position, Canvas canvas,
+      _PaintMetrics metrics) {
     final totalGap = (_finderPatternLimit - 1) * metrics.gapSize;
-    final radius =
+    var radius =
         ((_finderPatternLimit * metrics.pixelSize) + totalGap) -
             metrics.pixelSize;
     final strokeAdjust = metrics.pixelSize / 2.0;
@@ -355,22 +353,20 @@ class QrPainter extends CustomPainter {
       position: position,
     )!;
     outerPaint.strokeWidth = metrics.pixelSize;
-    outerPaint.color = color != null ? color! : eyeStyle.color!;
+    outerPaint.color = color != null ? color! : eyeStyle.eyeShapeOut!.color!;
 
-    final innerPaint = _paintCache
-        .firstPaint(QrCodeElement.finderPatternInner, position: position)!;
+    // Para el espacio en blanco o transparente entre el recuadro de fuera y el de dentro
+    final innerPaint = _paintCache.firstPaint(QrCodeElement.finderPatternInner, position: position)!;
     innerPaint.strokeWidth = metrics.pixelSize;
     innerPaint.color = emptyColor ?? const Color(0x00ffffff);
 
+    // para el de dentro
     final dotPaint = _paintCache.firstPaint(
       QrCodeElement.finderPatternDot,
       position: position,
     );
-    if (color != null) {
-      dotPaint!.color = color!;
-    } else {
-      dotPaint!.color = eyeStyle.color!;
-    }
+
+    dotPaint!.color = color != null ? color! : eyeStyle.eyeShapeIn!.color!;
 
     final outerRect =
         Rect.fromLTWH(offset.dx, offset.dy, radius, radius);
@@ -392,23 +388,50 @@ class QrPainter extends CustomPainter {
       dotSize,
     );
 
-    if (eyeStyle.eyeShape == QrEyeShape.square) {
+    if (eyeStyle.eyeShapeOut!.eyeShape == QrEyeShape.square && eyeStyle.eyeShapeIn!.eyeShape == QrEyeShape.square) {
       canvas.drawRect(outerRect, outerPaint);
       canvas.drawRect(innerRect, innerPaint);
       canvas.drawRect(dotRect, dotPaint);
-    } else {
-      final roundedOuterStrokeRect =
-          RRect.fromRectAndRadius(outerRect, Radius.circular(radius));
+    }else if (eyeStyle.eyeShapeOut!.eyeShape == QrEyeShape.square && eyeStyle.eyeShapeIn!.eyeShape == QrEyeShape.circle){
+      canvas.drawRect(outerRect, outerPaint);
+      canvas.drawRect(innerRect, innerPaint);
+      final roundedDotStrokeRect = RRect.fromRectAndRadius(dotRect, Radius.circular(dotSize));
+      canvas.drawRRect(roundedDotStrokeRect, dotPaint);
+    }else if (eyeStyle.eyeShapeOut!.eyeShape == QrEyeShape.circle && eyeStyle.eyeShapeIn!.eyeShape == QrEyeShape.square){
+      final roundedOuterStrokeRect = RRect.fromRectAndRadius(outerRect, Radius.circular(radius));
       canvas.drawRRect(roundedOuterStrokeRect, outerPaint);
-
-      final roundedInnerStrokeRect =
-          RRect.fromRectAndRadius(outerRect, Radius.circular(innerRadius));
+      final roundedInnerStrokeRect = RRect.fromRectAndRadius(outerRect, Radius.circular(innerRadius));
       canvas.drawRRect(roundedInnerStrokeRect, innerPaint);
-
-      final roundedDotStrokeRect =
-          RRect.fromRectAndRadius(dotRect, Radius.circular(dotSize));
+      canvas.drawRect(dotRect, dotPaint);
+    }else if (eyeStyle.eyeShapeOut!.eyeShape == QrEyeShape.circle && eyeStyle.eyeShapeIn!.eyeShape == QrEyeShape.circle){
+      final roundedOuterStrokeRect = RRect.fromRectAndRadius(outerRect, Radius.circular(radius));
+      canvas.drawRRect(roundedOuterStrokeRect, outerPaint);
+      final roundedInnerStrokeRect = RRect.fromRectAndRadius(outerRect, Radius.circular(innerRadius));
+      canvas.drawRRect(roundedInnerStrokeRect, innerPaint);
+      final roundedDotStrokeRect = RRect.fromRectAndRadius(dotRect, Radius.circular(dotSize));
+      canvas.drawRRect(roundedDotStrokeRect, dotPaint);
+    }else if (eyeStyle.eyeShapeOut!.eyeShape == QrEyeShape.rounded && eyeStyle.eyeShapeIn!.eyeShape == QrEyeShape.square){
+      final roundedOuterStrokeRect = RRect.fromRectAndRadius(outerRect, Radius.circular(outerRect.height*0.24));
+      canvas.drawRRect(roundedOuterStrokeRect, outerPaint);
+      final roundedInnerStrokeRect = RRect.fromRectAndRadius(outerRect, Radius.circular(innerRadius));
+      canvas.drawRRect(roundedInnerStrokeRect, innerPaint);
+      canvas.drawRect(dotRect, dotPaint);
+    }else if (eyeStyle.eyeShapeOut!.eyeShape == QrEyeShape.rounded && eyeStyle.eyeShapeIn!.eyeShape == QrEyeShape.circle){
+      final roundedOuterStrokeRect = RRect.fromRectAndRadius(outerRect, Radius.circular(outerRect.height*0.24));
+      canvas.drawRRect(roundedOuterStrokeRect, outerPaint);
+      final roundedInnerStrokeRect = RRect.fromRectAndRadius(outerRect, Radius.circular(innerRadius));
+      canvas.drawRRect(roundedInnerStrokeRect, innerPaint);
+      final roundedDotStrokeRect = RRect.fromRectAndRadius(dotRect, Radius.circular(dotSize));
+      canvas.drawRRect(roundedDotStrokeRect, dotPaint);
+    }else{ // rounded && rounded
+      final roundedOuterStrokeRect = RRect.fromRectAndRadius(outerRect, Radius.circular(outerRect.height*0.24));
+      canvas.drawRRect(roundedOuterStrokeRect, outerPaint);
+      final roundedInnerStrokeRect = RRect.fromRectAndRadius(outerRect, Radius.circular(innerRadius));
+      canvas.drawRRect(roundedInnerStrokeRect, innerPaint);
+      final roundedDotStrokeRect = RRect.fromRectAndRadius(dotRect, Radius.circular(dotRect.height*0.25));
       canvas.drawRRect(roundedDotStrokeRect, dotPaint);
     }
+
   }
 
   bool _hasOneNonZeroSide(Size size) => size.longestSide > 0;

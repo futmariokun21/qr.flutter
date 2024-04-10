@@ -34,8 +34,8 @@ class QrImageView extends StatefulWidget {
     this.embeddedImageStyle,
     this.semanticsLabel = 'qr code',
     this.eyeStyle = const QrEyeStyle(
-      eyeShape: QrEyeShape.square,
-      color: Colors.black,
+      eyeShapeOut: QrEyeStyleType(eyeShape: QrEyeShape.square, color: Colors.black),
+      eyeShapeIn: QrEyeStyleType(eyeShape: QrEyeShape.square, color: Colors.black),
     ),
     this.dataModuleStyle = const QrDataModuleStyle(
       dataModuleShape: QrDataModuleShape.square,
@@ -68,8 +68,8 @@ class QrImageView extends StatefulWidget {
     this.embeddedImageStyle,
     this.semanticsLabel = 'qr code',
     this.eyeStyle = const QrEyeStyle(
-      eyeShape: QrEyeShape.square,
-      color: Colors.black,
+      eyeShapeOut: QrEyeStyleType(eyeShape: QrEyeShape.square, color: Colors.black),
+      eyeShapeIn: QrEyeStyleType(eyeShape: QrEyeShape.square, color: Colors.black),
     ),
     this.dataModuleStyle = const QrDataModuleStyle(
       dataModuleShape: QrDataModuleShape.square,
